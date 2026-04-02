@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../data/mock_wallet_data.dart';
 import '../../../routes/app_routes.dart';
+import '../controllers/wallet_controller.dart';
 
 class ProfileTabView extends StatelessWidget {
   const ProfileTabView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final walletController = Get.find<WalletController>();
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
@@ -46,12 +47,14 @@ class ProfileTabView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          MockWalletData.userName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                        Obx(
+                          () => Text(
+                            walletController.userName.value,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -61,11 +64,13 @@ class ProfileTabView extends StatelessWidget {
                               ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          MockWalletData.memberSince,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFF94A3B8),
-                              ),
+                        Obx(
+                          () => Text(
+                            walletController.memberSince.value,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: const Color(0xFF94A3B8),
+                                ),
+                          ),
                         ),
                       ],
                     ),

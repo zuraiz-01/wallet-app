@@ -5,6 +5,7 @@ import '../../../data/mock_wallet_data.dart';
 import '../../../routes/app_routes.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/brand_mark.dart';
+import '../controllers/wallet_controller.dart';
 import '../controllers/wallet_shell_controller.dart';
 
 class HomeTabView extends StatelessWidget {
@@ -12,6 +13,7 @@ class HomeTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final walletController = Get.find<WalletController>();
     final textTheme = Theme.of(context).textTheme;
 
     return Stack(
@@ -38,44 +40,70 @@ class HomeTabView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const BrandMark(size: 44, iconSize: 22),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                Obx(
+                  () => Row(
+                    children: [
+                      const BrandMark(size: 44, iconSize: 22),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hi, ${walletController.userName.value}',
+                              style: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              'Manage your money smartly',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Stack(
                         children: [
-                          Text(
-                            'Hi, ${MockWalletData.userName}',
-                            style: textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFD7E1F1)),
+                            ),
+                            child: IconButton(
+                              onPressed: () => Get.toNamed(AppRoutes.notifications),
+                              icon: const Icon(Icons.notifications_none_rounded),
                             ),
                           ),
-                          Text(
-                            'Manage your money smartly',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF64748B),
+                          if (walletController.unreadNotificationsCount > 0)
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFEF4444),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
                             ),
-                          ),
                         ],
                       ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFD7E1F1)),
-                      ),
-                      child: IconButton(
-                        onPressed: () => Get.toNamed(AppRoutes.notifications),
-                        icon: const Icon(Icons.notifications_none_rounded),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 22),
-                _GlassBalanceCard(textTheme: textTheme),
+                Obx(
+                  () => _GlassBalanceCard(
+                    textTheme: textTheme,
+                    totalBalance: walletController.totalBalanceLabel,
+                    monthlyIncome: walletController.monthlyIncomeLabel,
+                    monthlySpend: walletController.monthlySpendLabel,
+                  ),
+                ),
                 const SizedBox(height: 22),
                 Text(
                   'Quick Actions',
@@ -128,17 +156,51 @@ class HomeTabView extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                ...MockWalletData.transactions.take(4).map(
-                  (transaction) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _TransactionTile(transaction: transaction),
-                  ),
+                Obx(
+                  () {
+                    final recentTransactions = walletController.transactions.take(4);
+                    if (recentTransactions.isEmpty) {
+                      return _emptyCard(
+                        context,
+                        'No activity yet. Send or request money to get started.',
+                      );
+                    }
+
+                    return Column(
+                      children: recentTransactions
+                          .map(
+                            (transaction) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _TransactionTile(transaction: transaction),
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
                 ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _emptyCard(BuildContext context, String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Text(
+        message,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF64748B),
+            ),
+      ),
     );
   }
 }
@@ -166,9 +228,17 @@ class _BlurCircle extends StatelessWidget {
 }
 
 class _GlassBalanceCard extends StatelessWidget {
-  const _GlassBalanceCard({required this.textTheme});
+  const _GlassBalanceCard({
+    required this.textTheme,
+    required this.totalBalance,
+    required this.monthlyIncome,
+    required this.monthlySpend,
+  });
 
   final TextTheme textTheme;
+  final String totalBalance;
+  final String monthlyIncome;
+  final String monthlySpend;
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +277,7 @@ class _GlassBalanceCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Text(
-                  'Premium',
+                  'Live',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 11,
@@ -219,7 +289,7 @@ class _GlassBalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            MockWalletData.totalBalance,
+            totalBalance,
             style: textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -228,9 +298,9 @@ class _GlassBalanceCard extends StatelessWidget {
           const SizedBox(height: 18),
           Row(
             children: [
-              _metricTile('Income', MockWalletData.monthlyIncome),
+              _metricTile('Income', monthlyIncome),
               const SizedBox(width: 10),
-              _metricTile('Spent', MockWalletData.monthlySpend),
+              _metricTile('Spent', monthlySpend),
             ],
           ),
         ],

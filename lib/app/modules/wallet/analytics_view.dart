@@ -1,72 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../../data/mock_wallet_data.dart';
+import 'controllers/wallet_controller.dart';
 
 class AnalyticsView extends StatelessWidget {
   const AnalyticsView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final walletController = Get.find<WalletController>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Analytics')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+        child: Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Last 7 Days Spend',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    _BarChart(values: walletController.weeklySpendRatios),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'April Overview',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Spending By Category',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 14),
+                    if (walletController.spendingStats.isEmpty)
+                      Text(
+                        'No expense transactions in this month yet.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: const Color(0xFF64748B),
+                            ),
+                      ),
+                    ...walletController.spendingStats.map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: _CategoryBar(
+                          name: item.name,
+                          amount: item.amountLabel,
+                          percentage: item.percentage,
                         ),
-                  ),
-                  const SizedBox(height: 12),
-                  const _BarChart(),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Spending By Category',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: 14),
-                  ...MockWalletData.spendByCategory.map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: _CategoryBar(
-                        name: item.$1,
-                        amount: item.$3,
-                        percentage: item.$2,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -74,23 +86,24 @@ class AnalyticsView extends StatelessWidget {
 }
 
 class _BarChart extends StatelessWidget {
-  const _BarChart();
+  const _BarChart({required this.values});
 
-  static const _bars = [0.35, 0.55, 0.72, 0.44, 0.62, 0.48, 0.76];
+  final List<double> values;
+
   static const _labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(_bars.length, (index) {
-        final value = _bars[index];
+      children: List.generate(values.length, (index) {
+        final value = values[index];
         return Expanded(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                height: 120 * value,
+                height: 120 * value.clamp(0.1, 1.0).toDouble(),
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),

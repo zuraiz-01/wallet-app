@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../data/mock_wallet_data.dart';
+import '../controllers/wallet_controller.dart';
 
 class CardsTabView extends StatelessWidget {
   const CardsTabView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final walletController = Get.find<WalletController>();
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
@@ -27,29 +31,61 @@ class CardsTabView extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 20),
-            ...MockWalletData.cards.map(
-              (card) => Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: _CardTile(card: card),
-              ),
+            Obx(
+              () {
+                if (walletController.cards.isEmpty) {
+                  return _emptyCard(context);
+                }
+
+                return Column(
+                  children: walletController.cards
+                      .map(
+                        (card) => Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: _CardTile(card: card),
+                        ),
+                      )
+                      .toList(),
+                );
+              },
             ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () async {
+                  await walletController.addVirtualCard();
+                  if (context.mounted) {
+                    Get.snackbar(
+                      'Card Added',
+                      'A new virtual card was added and saved in Hive.',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  }
+                },
                 icon: const Icon(Icons.add),
                 label: const Text('Add New Card'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _emptyCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        'No cards yet. Tap "Add New Card" to create one.',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF64748B),
+            ),
       ),
     );
   }

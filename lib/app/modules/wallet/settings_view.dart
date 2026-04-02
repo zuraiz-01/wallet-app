@@ -8,7 +8,7 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SettingsController());
+    final controller = Get.find<SettingsController>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -21,7 +21,7 @@ class SettingsView extends StatelessWidget {
               Obx(
                 () => SwitchListTile.adaptive(
                   value: controller.biometricLock.value,
-                  onChanged: (value) => controller.biometricLock.value = value,
+                  onChanged: (value) => controller.setBiometricLock(value),
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Biometric Lock'),
                   subtitle: const Text('Use fingerprint or face unlock'),
@@ -30,7 +30,7 @@ class SettingsView extends StatelessWidget {
               Obx(
                 () => SwitchListTile.adaptive(
                   value: controller.quickPayments.value,
-                  onChanged: (value) => controller.quickPayments.value = value,
+                  onChanged: (value) => controller.setQuickPayments(value),
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Quick Payments'),
                   subtitle: const Text('Allow one-tap transfers'),
@@ -45,7 +45,7 @@ class SettingsView extends StatelessWidget {
               Obx(
                 () => SwitchListTile.adaptive(
                   value: controller.pushAlerts.value,
-                  onChanged: (value) => controller.pushAlerts.value = value,
+                  onChanged: (value) => controller.setPushAlerts(value),
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Push Notifications'),
                   subtitle: const Text('Transaction and payment alerts'),
@@ -54,7 +54,7 @@ class SettingsView extends StatelessWidget {
               Obx(
                 () => SwitchListTile.adaptive(
                   value: controller.emailAlerts.value,
-                  onChanged: (value) => controller.emailAlerts.value = value,
+                  onChanged: (value) => controller.setEmailAlerts(value),
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Email Summary'),
                   subtitle: const Text('Weekly statements and insights'),

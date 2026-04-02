@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../data/mock_wallet_data.dart';
+import '../controllers/wallet_controller.dart';
 
-class ActivityTabView extends StatelessWidget {
+class ActivityTabView extends StatefulWidget {
   const ActivityTabView({super.key});
 
   @override
+  State<ActivityTabView> createState() => _ActivityTabViewState();
+}
+
+class _ActivityTabViewState extends State<ActivityTabView> {
+  static const _filters = ['All', 'Income', 'Expense', 'Cards', 'Transfers'];
+  String _selectedFilter = 'All';
+
+  @override
   Widget build(BuildContext context) {
+    final walletController = Get.find<WalletController>();
+
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,24 +37,41 @@ class ActivityTabView extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
-              children: const [
-                _FilterChip(label: 'All', isSelected: true),
-                _FilterChip(label: 'Income'),
-                _FilterChip(label: 'Expense'),
-                _FilterChip(label: 'Cards'),
-                _FilterChip(label: 'Transfers'),
-              ],
+              children: _filters
+                  .map(
+                    (filter) => _FilterChip(
+                      label: filter,
+                      isSelected: _selectedFilter == filter,
+                      onTap: () => setState(() => _selectedFilter = filter),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-              itemCount: MockWalletData.transactions.length,
-              separatorBuilder: (_, index) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final item = MockWalletData.transactions[index];
-                return _ActivityTile(transaction: item);
+            child: Obx(
+              () {
+                final filtered = _applyFilter(walletController.transactions);
+                if (filtered.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No transactions for $_selectedFilter yet.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF64748B),
+                          ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, index) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    return _ActivityTile(transaction: filtered[index]);
+                  },
+                );
               },
             ),
           ),
@@ -50,22 +79,49 @@ class ActivityTabView extends StatelessWidget {
       ),
     );
   }
+
+  List<TransactionModel> _applyFilter(List<TransactionModel> source) {
+    switch (_selectedFilter) {
+      case 'Income':
+        return source.where((transaction) => transaction.isCredit).toList();
+      case 'Expense':
+        return source.where((transaction) => !transaction.isCredit).toList();
+      case 'Cards':
+        return source
+            .where(
+              (transaction) =>
+                  transaction.subtitle.toLowerCase().contains('card') ||
+                  transaction.category.toLowerCase() == 'cards',
+            )
+            .toList();
+      case 'Transfers':
+        return source
+            .where((transaction) => transaction.category.toLowerCase() == 'transfer')
+            .toList();
+      case 'All':
+      default:
+        return source;
+    }
+  }
 }
 
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
     required this.label,
-    this.isSelected = false,
+    required this.isSelected,
+    required this.onTap,
   });
 
   final String label;
   final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: Chip(
+      child: ActionChip(
+        onPressed: onTap,
         label: Text(label),
         labelStyle: TextStyle(
           color: isSelected ? Colors.white : const Color(0xFF334155),

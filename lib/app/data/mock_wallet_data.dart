@@ -1,53 +1,187 @@
+import '../utils/wallet_formatters.dart';
+
 class ContactModel {
-  const ContactModel({
+  ContactModel({
     required this.name,
     required this.avatarLabel,
   });
 
   final String name;
   final String avatarLabel;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'avatarLabel': avatarLabel,
+    };
+  }
+
+  factory ContactModel.fromMap(Map<String, dynamic> map) {
+    return ContactModel(
+      name: map['name'] as String? ?? 'Unknown',
+      avatarLabel: map['avatarLabel'] as String? ?? 'U',
+    );
+  }
 }
 
 class TransactionModel {
-  const TransactionModel({
+  TransactionModel({
     required this.title,
     required this.subtitle,
-    required this.amount,
+    required this.amountValue,
     required this.isCredit,
-    required this.time,
+    required this.createdAt,
+    required this.category,
   });
 
   final String title;
   final String subtitle;
-  final String amount;
+  final double amountValue;
   final bool isCredit;
-  final String time;
+  final DateTime createdAt;
+  final String category;
+
+  String get amount => WalletFormatters.formatSignedCurrency(
+        amount: amountValue,
+        isCredit: isCredit,
+      );
+
+  String get time => WalletFormatters.formatTransactionTime(createdAt);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'subtitle': subtitle,
+      'amountValue': amountValue,
+      'isCredit': isCredit,
+      'createdAt': createdAt.toIso8601String(),
+      'category': category,
+    };
+  }
+
+  factory TransactionModel.fromMap(Map<String, dynamic> map) {
+    final amountValue = (map['amountValue'] as num?)?.toDouble() ??
+        WalletFormatters.parseCurrency(map['amount'] as String? ?? 'PKR 0');
+    return TransactionModel(
+      title: map['title'] as String? ?? 'Transaction',
+      subtitle: map['subtitle'] as String? ?? 'Wallet',
+      amountValue: amountValue,
+      isCredit: map['isCredit'] as bool? ?? amountValue >= 0,
+      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      category: map['category'] as String? ?? 'Other',
+    );
+  }
 }
 
 class CardModel {
-  const CardModel({
+  CardModel({
     required this.label,
     required this.number,
     required this.expiry,
     required this.brand,
-    required this.balance,
+    required this.balanceValue,
   });
 
   final String label;
   final String number;
   final String expiry;
   final String brand;
-  final String balance;
+  final double balanceValue;
+
+  String get balance => WalletFormatters.formatCurrency(balanceValue);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'label': label,
+      'number': number,
+      'expiry': expiry,
+      'brand': brand,
+      'balanceValue': balanceValue,
+    };
+  }
+
+  factory CardModel.fromMap(Map<String, dynamic> map) {
+    return CardModel(
+      label: map['label'] as String? ?? 'Card',
+      number: map['number'] as String? ?? '**** 0000',
+      expiry: map['expiry'] as String? ?? '01/30',
+      brand: map['brand'] as String? ?? 'VISA',
+      balanceValue: (map['balanceValue'] as num?)?.toDouble() ??
+          WalletFormatters.parseCurrency(map['balance'] as String? ?? 'PKR 0'),
+    );
+  }
+}
+
+class NotificationModel {
+  NotificationModel({
+    required this.title,
+    required this.message,
+    required this.createdAt,
+    required this.isUnread,
+  });
+
+  final String title;
+  final String message;
+  final DateTime createdAt;
+  final bool isUnread;
+
+  String get time => WalletFormatters.formatRelativeTime(createdAt);
+
+  NotificationModel copyWith({
+    String? title,
+    String? message,
+    DateTime? createdAt,
+    bool? isUnread,
+  }) {
+    return NotificationModel(
+      title: title ?? this.title,
+      message: message ?? this.message,
+      createdAt: createdAt ?? this.createdAt,
+      isUnread: isUnread ?? this.isUnread,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'message': message,
+      'createdAt': createdAt.toIso8601String(),
+      'isUnread': isUnread,
+    };
+  }
+
+  factory NotificationModel.fromMap(Map<String, dynamic> map) {
+    return NotificationModel(
+      title: map['title'] as String? ?? 'Notification',
+      message: map['message'] as String? ?? '',
+      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      isUnread: map['isUnread'] as bool? ?? false,
+    );
+  }
+}
+
+class SpendingCategoryStat {
+  SpendingCategoryStat({
+    required this.name,
+    required this.amountValue,
+    required this.percentage,
+  });
+
+  final String name;
+  final double amountValue;
+  final double percentage;
+
+  String get amountLabel => WalletFormatters.formatCurrency(amountValue);
 }
 
 abstract final class MockWalletData {
   static const userName = 'Zuraiz Khan';
   static const memberSince = 'Member since Jan 2026';
-  static const totalBalance = 'PKR 284,500';
-  static const monthlyIncome = 'PKR 92,000';
-  static const monthlySpend = 'PKR 61,400';
+  static const initialTotalBalance = 284500.0;
 
-  static const contacts = [
+  static final contacts = [
     ContactModel(name: 'Ali', avatarLabel: 'A'),
     ContactModel(name: 'Sana', avatarLabel: 'S'),
     ContactModel(name: 'Usman', avatarLabel: 'U'),
@@ -55,106 +189,105 @@ abstract final class MockWalletData {
     ContactModel(name: 'Daniyal', avatarLabel: 'D'),
   ];
 
-  static const cards = [
+  static final cards = [
     CardModel(
       label: 'Primary Card',
       number: '**** 4587',
       expiry: '09/28',
       brand: 'VISA',
-      balance: 'PKR 184,200',
+      balanceValue: 184200,
     ),
     CardModel(
       label: 'Travel Card',
       number: '**** 9064',
       expiry: '12/27',
       brand: 'Mastercard',
-      balance: 'PKR 73,900',
+      balanceValue: 73900,
     ),
     CardModel(
       label: 'Virtual Card',
       number: '**** 1320',
       expiry: '04/29',
       brand: 'VISA',
-      balance: 'PKR 26,400',
+      balanceValue: 26400,
     ),
   ];
 
-  static const transactions = [
+  static final transactions = [
     TransactionModel(
       title: 'Salary Credit',
       subtitle: 'Wallet Top-Up',
-      amount: '+PKR 92,000',
+      amountValue: 92000,
       isCredit: true,
-      time: 'Today, 09:00 AM',
+      createdAt: DateTime.now().subtract(const Duration(hours: 9)),
+      category: 'Income',
     ),
     TransactionModel(
       title: 'Grocery Mart',
       subtitle: 'POS Payment',
-      amount: '-PKR 8,450',
+      amountValue: 8450,
       isCredit: false,
-      time: 'Today, 07:10 PM',
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      category: 'Food',
     ),
     TransactionModel(
       title: 'Netflix',
       subtitle: 'Subscription',
-      amount: '-PKR 2,200',
+      amountValue: 2200,
       isCredit: false,
-      time: 'Yesterday, 10:40 PM',
+      createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 4)),
+      category: 'Entertainment',
     ),
     TransactionModel(
       title: 'Received From Ali',
       subtitle: 'Peer Transfer',
-      amount: '+PKR 4,500',
+      amountValue: 4500,
       isCredit: true,
-      time: 'Yesterday, 03:25 PM',
+      createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 12)),
+      category: 'Transfer',
     ),
     TransactionModel(
       title: 'Fuel Station',
       subtitle: 'Card Payment',
-      amount: '-PKR 5,200',
+      amountValue: 5200,
       isCredit: false,
-      time: 'Mar 30, 08:10 PM',
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
+      category: 'Transport',
     ),
     TransactionModel(
       title: 'Electricity Bill',
       subtitle: 'Bill Payment',
-      amount: '-PKR 12,600',
+      amountValue: 12600,
       isCredit: false,
-      time: 'Mar 29, 04:18 PM',
+      createdAt: DateTime.now().subtract(const Duration(days: 4, hours: 2)),
+      category: 'Bills',
     ),
   ];
 
-  static const notifications = [
-    (
+  static final notifications = [
+    NotificationModel(
       title: 'Transfer Successful',
       message: 'PKR 2,500 sent to Sana.',
-      time: '2m ago',
+      createdAt: DateTime.now().subtract(const Duration(minutes: 2)),
       isUnread: true,
     ),
-    (
+    NotificationModel(
       title: 'Utility Bill Reminder',
       message: 'Your gas bill is due in 2 days.',
-      time: '1h ago',
+      createdAt: DateTime.now().subtract(const Duration(hours: 1)),
       isUnread: true,
     ),
-    (
+    NotificationModel(
       title: 'Spending Insight',
       message: 'Food spending is 18% lower than last month.',
-      time: 'Yesterday',
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
       isUnread: false,
     ),
-    (
+    NotificationModel(
       title: 'New Device Login',
       message: 'Your account logged in from Pixel 8.',
-      time: 'Mar 30',
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
       isUnread: false,
     ),
-  ];
-
-  static const spendByCategory = [
-    ('Food', 0.34, 'PKR 20,900'),
-    ('Transport', 0.22, 'PKR 13,700'),
-    ('Bills', 0.26, 'PKR 16,100'),
-    ('Shopping', 0.18, 'PKR 10,700'),
   ];
 }

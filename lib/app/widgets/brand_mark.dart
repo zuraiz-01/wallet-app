@@ -17,18 +17,22 @@ class BrandMark extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB), Color(0xFF0EA5E9)],
+          colors: [Color(0xFF294EF2), Color(0xFF3A67FF), Color(0xFF09B6D9)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(size * 0.32),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x330F172A),
-            blurRadius: 20,
-            offset: Offset(0, 10),
+            color: Color(0x33294EF2),
+            blurRadius: 22,
+            offset: Offset(0, 12),
           ),
         ],
+        border: Border.all(
+          color: const Color(0x66FFFFFF),
+          width: 1.2,
+        ),
       ),
       child: Icon(Icons.account_balance_wallet_rounded,
           color: Colors.white, size: iconSize),

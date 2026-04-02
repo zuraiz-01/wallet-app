@@ -1,17 +1,55 @@
-# wallet_app
+# Walletly - GetX Static Wallet App
 
-A new Flutter project.
+A Flutter wallet app with complete static UI flows using GetX routing/state management.
 
-## Getting Started
+## Tech Stack
 
-This project is a starting point for a Flutter application.
+- Flutter
+- GetX (`get: ^4.6.6`)
 
-A few resources to get you started if this is your first Flutter project:
+## Implemented Screens
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- Onboarding
+- Login
+- Register
+- Forgot Password
+- Wallet Shell (Bottom Navigation)
+  - Home
+  - Cards
+  - Activity
+  - Profile
+- Send Money
+- Request Money
+- Analytics
+- Notifications
+- Settings
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Project Structure
+
+```text
+lib/
+  app/
+    app.dart
+    data/
+    modules/
+      auth/
+      onboarding/
+      wallet/
+    routes/
+    theme/
+    widgets/
+```
+
+## Run Locally
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Quality Checks
+
+```bash
+flutter analyze
+flutter test
+```

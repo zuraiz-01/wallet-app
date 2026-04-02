@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../modules/auth/forgot_password_view.dart';
+import '../modules/auth/login_view.dart';
+import '../modules/auth/register_view.dart';
+import '../modules/onboarding/onboarding_view.dart';
 import '../modules/shared/placeholder_screen.dart';
 import 'app_routes.dart';
 
@@ -49,29 +53,13 @@ abstract final class AppPages {
   ];
 }
 
-Widget _onboardingPage() => const PlaceholderScreen(
-      title: 'Onboarding',
-      nextRoute: AppRoutes.login,
-      nextLabel: 'Continue',
-    );
+OnboardingView _onboardingPage() => const OnboardingView();
 
-Widget _loginPage() => const PlaceholderScreen(
-      title: 'Login',
-      nextRoute: AppRoutes.wallet,
-      nextLabel: 'Sign In',
-    );
+LoginView _loginPage() => const LoginView();
 
-Widget _registerPage() => const PlaceholderScreen(
-      title: 'Register',
-      nextRoute: AppRoutes.wallet,
-      nextLabel: 'Create Account',
-    );
+RegisterView _registerPage() => const RegisterView();
 
-Widget _forgotPasswordPage() => const PlaceholderScreen(
-      title: 'Forgot Password',
-      nextRoute: AppRoutes.login,
-      nextLabel: 'Back To Login',
-    );
+ForgotPasswordView _forgotPasswordPage() => const ForgotPasswordView();
 
 Widget _walletPage() => const PlaceholderScreen(
       title: 'Wallet Dashboard',

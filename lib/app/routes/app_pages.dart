@@ -1,11 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../modules/auth/forgot_password_view.dart';
 import '../modules/auth/login_view.dart';
 import '../modules/auth/register_view.dart';
 import '../modules/onboarding/onboarding_view.dart';
-import '../modules/shared/placeholder_screen.dart';
+import '../modules/wallet/analytics_view.dart';
+import '../modules/wallet/notifications_view.dart';
+import '../modules/wallet/request_money_view.dart';
+import '../modules/wallet/send_money_view.dart';
+import '../modules/wallet/settings_view.dart';
+import '../modules/wallet/wallet_shell_view.dart';
 import 'app_routes.dart';
 
 abstract final class AppPages {
@@ -61,31 +65,14 @@ RegisterView _registerPage() => const RegisterView();
 
 ForgotPasswordView _forgotPasswordPage() => const ForgotPasswordView();
 
-Widget _walletPage() => const PlaceholderScreen(
-      title: 'Wallet Dashboard',
-      nextRoute: AppRoutes.sendMoney,
-    );
+WalletShellView _walletPage() => const WalletShellView();
 
-Widget _sendMoneyPage() => const PlaceholderScreen(
-      title: 'Send Money',
-      nextRoute: AppRoutes.requestMoney,
-    );
+SendMoneyView _sendMoneyPage() => const SendMoneyView();
 
-Widget _requestMoneyPage() => const PlaceholderScreen(
-      title: 'Request Money',
-      nextRoute: AppRoutes.analytics,
-    );
+RequestMoneyView _requestMoneyPage() => const RequestMoneyView();
 
-Widget _analyticsPage() => const PlaceholderScreen(
-      title: 'Analytics',
-      nextRoute: AppRoutes.notifications,
-    );
+AnalyticsView _analyticsPage() => const AnalyticsView();
 
-Widget _notificationsPage() => const PlaceholderScreen(
-      title: 'Notifications',
-      nextRoute: AppRoutes.settings,
-    );
+NotificationsView _notificationsPage() => const NotificationsView();
 
-Widget _settingsPage() => const PlaceholderScreen(
-      title: 'Settings',
-    );
+SettingsView _settingsPage() => const SettingsView();
